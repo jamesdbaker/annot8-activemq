@@ -7,12 +7,17 @@ import io.annot8.core.exceptions.BadConfigurationException;
 import io.annot8.core.exceptions.MissingResourceException;
 import io.annot8.core.settings.Settings;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
 
 public class ActiveMQResource implements Resource {
   private Connection connection;
+
+  private Logger LOGGER = LoggerFactory.getLogger(ActiveMQResource.class);
+
 
   @Override
   public void configure(Context context) throws BadConfigurationException, MissingResourceException {
@@ -36,8 +41,7 @@ public class ActiveMQResource implements Resource {
     try {
       connection.close();
     } catch (JMSException e) {
-      //TODO: Log error here
-      e.printStackTrace();
+      LOGGER.debug("Exception caught whilst closing ActiveMQ connection");
     }
   }
 

@@ -12,6 +12,8 @@ import io.annot8.core.exceptions.IncompleteException;
 import io.annot8.core.exceptions.MissingResourceException;
 import io.annot8.core.exceptions.UnsupportedContentException;
 import io.annot8.core.settings.Settings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jms.*;
 import java.util.ArrayList;
@@ -23,6 +25,8 @@ public class ActiveMQSource implements Source {
   private List<Message> messages = new ArrayList<>();
 
   private Session session = null;
+
+  private Logger LOGGER = LoggerFactory.getLogger(ActiveMQSource.class);
 
   @Override
   public SourceResponse read(ItemFactory itemFactory) {
@@ -46,7 +50,7 @@ public class ActiveMQSource implements Source {
         item.getProperties().set("_jms.timestamp", m.getJMSTimestamp());
         //TODO: Are any of the other fields useful?
       }catch (JMSException e) {
-        //TODO: Should we log?
+        LOGGER.warn("Exception caught whilst adding to properties to item", e);
         item.discard();
       }
 
@@ -57,11 +61,11 @@ public class ActiveMQSource implements Source {
               .withName("message")
               .save();
         }catch (UnsupportedContentException | IncompleteException | JMSException e) {
-          //TODO: Should we log?
+          LOGGER.warn("Exception caught whilst creating Text content", e);
           item.discard();
         }
       }else{
-          //TODO: Not supported, should we log?
+          LOGGER.debug("Unsupported message type {}", m.getClass().getName());
           item.discard();
       }
 
@@ -98,8 +102,7 @@ public class ActiveMQSource implements Source {
       try {
         session.close();
       } catch (JMSException e) {
-        //TODO: Log exception
-        e.printStackTrace();
+        LOGGER.debug("Exception caught whilst closing ActiveMQ session");
       }
     }
   }
